@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
+import { CatalogPage } from './pages/CatalogPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { TwoFactorChallenge } from './pages/TwoFactorChallenge';
@@ -13,7 +14,6 @@ const AppContent: React.FC = () => {
   const { user, isAuthenticated, isLoading, requires2FA } = useAuth();
   const [currentPage, setCurrentPage] = useState<string>('landing');
 
-  // Handle navigation with authentication guards
   const handleNavigate = (page: string) => {
     setCurrentPage(page);
   };
@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
         <div className="flex items-center space-x-3 text-emerald-400">
           <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-semibold">Verifying secure session...</span>
+          <span className="text-sm font-semibold">Verifying secure portal session...</span>
         </div>
       </div>
     );
@@ -48,6 +48,10 @@ const AppContent: React.FC = () => {
       <main className="flex-1">
         {currentPage === 'landing' && (
           <LandingPage onNavigate={handleNavigate} isAuthenticated={isAuthenticated} />
+        )}
+
+        {currentPage === 'catalog' && (
+          <CatalogPage onNavigate={handleNavigate} isAuthenticated={isAuthenticated} />
         )}
 
         {currentPage === 'login' && <LoginPage onNavigate={handleNavigate} />}
@@ -77,7 +81,7 @@ const AppContent: React.FC = () => {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Secure Role-Based Authentication System &bull; Information Security Academic Project &bull;{' '}
+        Apex University &bull; School Management System &bull; Information Security Academic Project &bull;{' '}
         {new Date().getFullYear()}
       </footer>
     </div>

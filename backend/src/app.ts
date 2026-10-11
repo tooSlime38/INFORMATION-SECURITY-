@@ -9,6 +9,7 @@ import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { authRouter } from './routes/auth.routes.js';
 import { userRouter } from './routes/user.routes.js';
 import { adminRouter } from './routes/admin.routes.js';
+import { schoolRouter } from './routes/school.routes.js';
 import { sendSuccess } from './utils/response.js';
 
 export const app: Application = express();
@@ -51,7 +52,7 @@ app.use('/api', apiLimiter);
 
 // 6. Root & Health Check Endpoints
 app.get('/', (_req, res) => {
-  sendSuccess(res, { status: 'ONLINE', version: '1.0.0' }, 'Secure Authentication System API');
+  sendSuccess(res, { status: 'ONLINE', portal: 'School Management System', version: '1.0.0' }, 'Academic Portal API');
 });
 
 app.get('/health', (_req, res) => {
@@ -60,6 +61,7 @@ app.get('/health', (_req, res) => {
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     environment: env.NODE_ENV,
+    portal: 'School Management System',
   });
 });
 
@@ -67,6 +69,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/school', schoolRouter);
 
 // 8. 404 & Error Handling Middlewares
 app.use(notFoundHandler);

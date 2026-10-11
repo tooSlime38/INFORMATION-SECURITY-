@@ -8,19 +8,29 @@ import {
   RefreshCw,
   Trash2,
   CheckCircle,
-  AlertTriangle,
-  Info,
   Clock,
   Download,
   RotateCcw,
+  BookOpen,
+  Plus,
 } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'backups'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'audit' | 'backups'>('users');
 
   // Users state
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // Courses state
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newDept, setNewDept] = useState('Cybersecurity');
+  const [newCredits, setNewCredits] = useState('3');
+  const [newInstructor, setNewInstructor] = useState('');
+  const [newSchedule, setNewSchedule] = useState('');
 
   // Audit Logs state
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -41,6 +51,18 @@ export const AdminPage: React.FC = () => {
       console.error('Failed to load users:', err);
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const fetchCourses = async () => {
+    setLoadingCourses(true);
+    try {
+      const res = await api.getCourses();
+      setCourses(res.data.courses);
+    } catch (err: any) {
+      console.error('Failed to load courses:', err);
+    } finally {
+      setLoadingCourses(false);
     }
   };
 
@@ -70,6 +92,7 @@ export const AdminPage: React.FC = () => {
 
   useEffect(() => {
     if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'courses') fetchCourses();
     if (activeTab === 'audit') fetchLogs();
     if (activeTab === 'backups') fetchBackups();
   }, [activeTab]);
@@ -105,12 +128,45 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  const handleAddCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.createCourse({
+        code: newCode,
+        title: newTitle,
+        department: newDept,
+        credits: parseInt(newCredits, 10),
+        instructor: newInstructor,
+        schedule: newSchedule,
+      });
+      setActionMessage(`Course ${newCode} added to university catalog.`);
+      setNewCode('');
+      setNewTitle('');
+      setNewInstructor('');
+      setNewSchedule('');
+      fetchCourses();
+    } catch (err: any) {
+      alert(err.message || 'Failed to create course');
+    }
+  };
+
+  const handleDeleteCourse = async (id: string, code: string) => {
+    if (!confirm(`Are you sure you want to remove course ${code}?`)) return;
+    try {
+      await api.deleteCourse(id);
+      setActionMessage(`Course ${code} removed.`);
+      fetchCourses();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete course');
+    }
+  };
+
   const handleCreateBackup = async () => {
     setLoadingBackups(true);
     setActionMessage(null);
     try {
       const res = await api.createBackup();
-      setActionMessage(`Backup created: ${res.data.id} (${res.data.totalDocuments} documents)`);
+      setActionMessage(`Automated snapshot created: ${res.data.id} (${res.data.totalDocuments} records)`);
       fetchBackups();
     } catch (err: any) {
       alert(err.message || 'Backup creation failed');
@@ -148,11 +204,11 @@ export const AdminPage: React.FC = () => {
       <div className="mb-8">
         <div className="inline-flex items-center space-x-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-xs font-semibold uppercase tracking-wider mb-2">
           <ShieldAlert className="w-3.5 h-3.5" />
-          <span>Restricted Administrator Console</span>
+          <span>Apex University Administration Console</span>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Admin Control Center</h1>
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">School Registrar & Governance</h1>
         <p className="text-slate-400 text-sm mt-1">
-          Role-Based Access Control, Security Audit Trail, and Automated Database Backups.
+          Manage Student & Faculty Accounts (GUEST / USER / ADMIN), Course Catalog, Campus Security Logs, and Database Backups.
         </p>
       </div>
 
@@ -169,34 +225,46 @@ export const AdminPage: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex space-x-2 border-b border-slate-700/80 mb-8">
+      <div className="flex space-x-2 border-b border-slate-700/80 mb-8 overflow-x-auto">
         <button
           onClick={() => setActiveTab('users')}
-          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 transition-all ${
+          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'users'
               ? 'border-purple-500 text-white'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>User Management</span>
+          <span>Student & Staff Roster</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('courses')}
+          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-all ${
+            activeTab === 'courses'
+              ? 'border-purple-500 text-white'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Course Catalog Governance</span>
         </button>
 
         <button
           onClick={() => setActiveTab('audit')}
-          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 transition-all ${
+          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'audit'
               ? 'border-purple-500 text-white'
               : 'border-transparent text-slate-400 hover:text-slate-200'
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>Security Audit Trail</span>
+          <span>Campus Security Audit Trail</span>
         </button>
 
         <button
           onClick={() => setActiveTab('backups')}
-          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 transition-all ${
+          className={`flex items-center space-x-2 px-5 py-3 font-semibold text-sm border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'backups'
               ? 'border-purple-500 text-white'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -207,11 +275,14 @@ export const AdminPage: React.FC = () => {
         </button>
       </div>
 
-      {/* TAB 1: USER MANAGEMENT */}
+      {/* TAB 1: USER ROSTER MANAGEMENT */}
       {activeTab === 'users' && (
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-white">Registered Users ({users.length})</h3>
+            <div>
+              <h3 className="text-lg font-bold text-white">Registered Accounts ({users.length})</h3>
+              <p className="text-xs text-slate-400">Change authorization roles (GUEST, USER, ADMIN) or toggle active enrollment status.</p>
+            </div>
             <button
               onClick={fetchUsers}
               className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700/50"
@@ -225,27 +296,30 @@ export const AdminPage: React.FC = () => {
             <table className="w-full text-left text-sm text-slate-300">
               <thead className="bg-slate-900/80 text-xs uppercase font-semibold text-slate-400 border-b border-slate-700">
                 <tr>
-                  <th className="py-3.5 px-4">Username</th>
-                  <th className="py-3.5 px-4">Role</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">2FA</th>
-                  <th className="py-3.5 px-4">Created</th>
+                  <th className="py-3.5 px-4">Portal Username</th>
+                  <th className="py-3.5 px-4">Authorization Role</th>
+                  <th className="py-3.5 px-4">Enrollment Status</th>
+                  <th className="py-3.5 px-4">2FA Protection</th>
+                  <th className="py-3.5 px-4">Created Date</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/60">
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="py-3.5 px-4 font-semibold text-white">{u.username}</td>
+                    <td className="py-3.5 px-4 font-semibold text-white">
+                      <div>{u.username}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">ID: {u.id.substring(0, 12)}...</div>
+                    </td>
                     <td className="py-3.5 px-4">
                       <select
                         value={u.role}
                         onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
                         className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-purple-500"
                       >
-                        <option value="USER">USER</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="GUEST">GUEST</option>
+                        <option value="GUEST">GUEST (Visitor)</option>
+                        <option value="USER">USER (Student / Staff)</option>
+                        <option value="ADMIN">ADMIN (Registrar)</option>
                       </select>
                     </td>
                     <td className="py-3.5 px-4">
@@ -266,11 +340,11 @@ export const AdminPage: React.FC = () => {
                       <span
                         className={`text-xs px-2 py-0.5 rounded ${
                           u.twoFactorEnabled
-                            ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                             : 'bg-slate-900 text-slate-500'
                         }`}
                       >
-                        {u.twoFactorEnabled ? 'Active' : 'Off'}
+                        {u.twoFactorEnabled ? 'TOTP Active' : 'Off'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-xs text-slate-400">
@@ -293,17 +367,163 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: SECURITY AUDIT TRAIL */}
+      {/* TAB 2: COURSE CATALOG GOVERNANCE */}
+      {activeTab === 'courses' && (
+        <div className="space-y-6">
+          {/* Add Course Form */}
+          <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+              <Plus className="w-5 h-5 text-emerald-400" />
+              <span>Add New University Course</span>
+            </h3>
+
+            <form onSubmit={handleAddCourse} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Course Code
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. CS-450"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Course Title
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Cloud Security Engineering"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newDept}
+                  onChange={(e) => setNewDept(e.target.value)}
+                  placeholder="e.g. Cybersecurity"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Credits
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="6"
+                  required
+                  value={newCredits}
+                  onChange={(e) => setNewCredits(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Instructor
+                </label>
+                <input
+                  type="text"
+                  value={newInstructor}
+                  onChange={(e) => setNewInstructor(e.target.value)}
+                  placeholder="e.g. Dr. Ada Lovelace"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  Schedule
+                </label>
+                <input
+                  type="text"
+                  value={newSchedule}
+                  onChange={(e) => setNewSchedule(e.target.value)}
+                  placeholder="e.g. Mon / Wed 2:00 PM"
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white"
+                />
+              </div>
+
+              <div className="sm:col-span-3 pt-2">
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-colors shadow-lg"
+                >
+                  Publish Course to Catalog
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Existing Courses List */}
+          <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur">
+            <h3 className="text-lg font-bold text-white mb-4">Active Course Catalog ({courses.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="bg-slate-900/80 text-xs uppercase font-semibold text-slate-400 border-b border-slate-700">
+                  <tr>
+                    <th className="py-3 px-4">Code</th>
+                    <th className="py-3 px-4">Title</th>
+                    <th className="py-3 px-4">Department</th>
+                    <th className="py-3 px-4">Credits</th>
+                    <th className="py-3 px-4">Instructor</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700/60">
+                  {courses.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-700/20">
+                      <td className="py-3 px-4 font-mono font-bold text-emerald-400">{c.code}</td>
+                      <td className="py-3 px-4 font-semibold text-white">{c.title}</td>
+                      <td className="py-3 px-4 text-xs text-slate-400">{c.department}</td>
+                      <td className="py-3 px-4 text-xs">{c.credits}</td>
+                      <td className="py-3 px-4 text-xs text-slate-300">{c.instructor}</td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => handleDeleteCourse(c.id, c.code)}
+                          className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg"
+                          title="Delete Course"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: SECURITY AUDIT TRAIL */}
       {activeTab === 'audit' && (
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h3 className="text-lg font-bold text-white">Security Event Log ({filteredLogs.length})</h3>
+            <h3 className="text-lg font-bold text-white">Campus Security Event Log ({filteredLogs.length})</h3>
             <div className="flex items-center space-x-2">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search event, user, IP..."
+                placeholder="Search event, username, IP..."
                 className="px-3.5 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
               />
               <button
@@ -360,14 +580,14 @@ export const AdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: DATABASE BACKUPS */}
+      {/* TAB 4: DATABASE BACKUPS */}
       {activeTab === 'backups' && (
         <div className="bg-slate-800/80 border border-slate-700 rounded-3xl p-6 shadow-xl backdrop-blur">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-700/80">
             <div>
-              <h3 className="text-xl font-bold text-white">Automated Database Backups</h3>
+              <h3 className="text-xl font-bold text-white">Automated Student & Staff Database Backups</h3>
               <p className="text-xs text-slate-400 mt-1">
-                Creates full snapshots of all Firestore collections with SHA-256 integrity checksums.
+                Exports all Firestore collections (`users`, `usernames`, `twoFactor`, `courses`, `auditLogs`) with SHA-256 integrity verification.
               </p>
             </div>
 
@@ -387,8 +607,8 @@ export const AdminPage: React.FC = () => {
                 <tr>
                   <th className="py-3.5 px-4">Snapshot ID</th>
                   <th className="py-3.5 px-4">Timestamp</th>
-                  <th className="py-3.5 px-4">Documents</th>
-                  <th className="py-3.5 px-4">SHA-256 Checksum</th>
+                  <th className="py-3.5 px-4">Total Records</th>
+                  <th className="py-3.5 px-4">SHA-256 Integrity Checksum</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Disaster Recovery</th>
                 </tr>
@@ -419,7 +639,7 @@ export const AdminPage: React.FC = () => {
                         className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center space-x-1.5"
                       >
                         <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Restore</span>
+                        <span>Restore Snapshot</span>
                       </button>
                     </td>
                   </tr>

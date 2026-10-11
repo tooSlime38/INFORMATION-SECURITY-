@@ -190,7 +190,7 @@ export default function App() {
 
       {/* Header Bar */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>SecureAuth Mobile</Text>
+        <Text style={styles.headerTitle}>Apex University Portal</Text>
         <TouchableOpacity onPress={() => setShowConfig(!showConfig)}>
           <Text style={styles.configBtn}>⚙️ Server</Text>
         </TouchableOpacity>

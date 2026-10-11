@@ -83,6 +83,13 @@ export const api = {
   enable2fa: (code: string) => request('/api/auth/2fa/enable', { method: 'POST', body: JSON.stringify({ code }) }),
   disable2fa: (body: any) => request('/api/auth/2fa/disable', { method: 'POST', body: JSON.stringify(body) }),
 
+  // School Management System Endpoints
+  getCourses: () => request<{ data: { courses: any[]; total: number } }>('/api/school/courses'),
+  getAnnouncements: () => request<{ data: { announcements: any[] } }>('/api/school/announcements'),
+  getMyEnrollments: () => request<{ data: any }>('/api/school/my-enrollments'),
+  createCourse: (body: any) => request('/api/school/courses', { method: 'POST', body: JSON.stringify(body) }),
+  deleteCourse: (id: string) => request(`/api/school/courses/${id}`, { method: 'DELETE' }),
+
   // User
   getMe: () => request<{ data: User }>('/api/users/me'),
 
