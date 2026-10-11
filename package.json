@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Secure Role-Based Authentication System with 2FA, AES-256-GCM, and Automated Firestore Backups",
   "scripts": {
+    "build": "npm --prefix frontend run build",
     "dev:backend": "npm --prefix backend run dev",
     "build:backend": "npm --prefix backend run build",
     "test:backend": "npm --prefix backend run test",
@@ -10,6 +11,7 @@
     "restore": "npm --prefix backend run restore",
     "dev:frontend": "npm --prefix frontend run dev",
     "build:frontend": "npm --prefix frontend run build",
+    "start:backend": "npm --prefix backend run start",
     "start:mobile": "npm --prefix mobile run start"
   },
   "keywords": [
