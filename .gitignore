@@ -39,6 +39,7 @@ build/
 out/
 .expo/
 web-build/
+.vercel/
 
 # Testing & Coverage
 coverage/

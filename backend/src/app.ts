@@ -1,4 +1,5 @@
 import express, { type Application } from 'express';
+import './types/express.d.ts';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -28,7 +29,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+      if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV !== 'production' || origin.endsWith('.vercel.app')) {
         callback(null, true);
       } else {
         callback(new Error(`CORS policy blocked access from origin: ${origin}`));
