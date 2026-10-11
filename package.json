@@ -1,0 +1,28 @@
+{
+  "name": "secure-auth-system-workspace",
+  "version": "1.0.0",
+  "description": "Secure Role-Based Authentication System with 2FA, AES-256-GCM, and Automated Firestore Backups",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "test:backend": "npm --prefix backend run test",
+    "backup": "npm --prefix backend run backup",
+    "restore": "npm --prefix backend run restore",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:mobile": "npm --prefix mobile run start"
+  },
+  "keywords": [
+    "security",
+    "authentication",
+    "rbac",
+    "2fa",
+    "argon2",
+    "aes-256-gcm",
+    "firestore",
+    "expo",
+    "react"
+  ],
+  "author": "IT Student",
+  "license": "ISC"
+}
